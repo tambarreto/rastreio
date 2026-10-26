@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rastreio Cannale Cafés</title>
+<style>
+/* Layout: single narrow "receipt card" column, centered on a deep espresso field — phone-first, reads like a branded tracking slip rather than a generic delivery app */
+:root{
+  --bg:#141211;
+  --surface:#1C1917;
+  --surface-2:#252120;
+  --line:rgba(245,239,228,0.08);
+  --cream:#F5EFE4;
+  --dim:#A79A89;
+  --gold:#D9AD5C;
+  --gold-dim:#8F7A4F;
+  --sage:#8FA679;
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 50% -10%, rgba(217,173,92,0.12), transparent 60%),
+    var(--bg);
+  color:var(--cream);
+  font-family:'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:32px;
+  min-height:100%;
+  display:flex;
+  justify-content:center;
+}
+
+.sheet{
+  width:100%;
+  max-width:420px;
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+
+/* brand bar */
+.brand{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding-top:6px;
+}
+.brand svg{width:22px;height:22px;flex:none}
+.brand span{
+  font-family:'Fraunces', Georgia, serif;
+  font-size:1.05rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--cream);
+}
+.brand-rule{
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent);
+}
+
+/* status hero */
+.hero{
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.cup-illustration{
+  width:112px;
+  height:auto;
+  margin:0 auto 6px;
+  display:block;
+}
+.cup-illustration .steam path{
+  animation: rise 3.2s ease-in-out infinite;
+  transform-origin:center bottom;
+}
+.cup-illustration .steam path:nth-child(2){animation-delay:0.5s}
+.cup-illustration .steam path:nth-child(3){animation-delay:1s}
+@keyframes rise{
+  0%{opacity:0; transform:translateY(4px) scaleY(0.92);}
+  35%{opacity:0.85;}
+  70%{opacity:0.45;}
+  100%{opacity:0; transform:translateY(-9px) scaleY(1.05);}
+}
+.hero .eyebrow{
+  font-size:0.7rem;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.hero .stage{
+  font-family:'Fraunces', Georgia, serif;
+  font-size:1.65rem;
+  font-weight:500;
+  text-wrap:balance;
+  color:var(--cream);
+}
+.eta-pill{
+  margin:10px auto 0;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 18px;
+  border-radius:999px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+}
+.eta-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none}
+.eta-pill span{font-size:0.82rem;color:var(--dim)}
+.eta-pill b{
+  font-variant-numeric:tabular-nums;
+  color:var(--cream);
+  font-weight:700;
+  margin-left:2px;
+}
+
+/* route card */
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:20px;
+}
+.route-svg{display:block;width:100%;height:auto}
+
+.route-labels{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  font-size:0.74rem;
+  color:var(--dim);
+}
+.route-labels .from{color:var(--gold)}
+.route-labels .to{text-align:right}
+
+/* timeline */
+.timeline{
+  display:flex;
+  flex-direction:column;
+}
+.step{
+  display:grid;
+  grid-template-columns:24px 1fr;
+  gap:14px;
+  position:relative;
+}
+.step .rail{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.step .node{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--surface-2);
+  border:2px solid var(--gold-dim);
+  flex:none;
+  z-index:1;
+}
+.step.done .node{background:var(--gold);border-color:var(--gold)}
+.step.active .node{
+  background:var(--sage);
+  border-color:var(--sage);
+  box-shadow:0 0 0 4px rgba(143,166,121,0.22);
+  animation:pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 4px rgba(143,166,121,0.22)}
+  50%{box-shadow:0 0 0 7px rgba(143,166,121,0.10)}
+}
+.step .connector{
+  width:2px;
+  flex:1;
+  background:var(--line);
+  min-height:26px;
+}
+.step.done .connector{background:var(--gold-dim)}
+.step:last-child .connector{display:none}
+.step .body{padding-bottom:22px}
+.step:last-child .body{padding-bottom:0}
+.step .label{
+  font-size:0.92rem;
+  color:var(--dim);
+  font-weight:600;
+}
+.step.done .label, .step.active .label{color:var(--cream)}
+.step .time{
+  font-size:0.76rem;
+  color:var(--dim);
+  margin-top:2px;
+  font-variant-numeric:tabular-nums;
+}
+
+/* order summary */
+.order-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:12px;
+}
+.order-head h2{
+  font-family:'Fraunces', Georgia, serif;
+  font-weight:500;
+  font-size:1rem;
+  margin:0;
+  color:var(--cream);
+}
+.order-head .count{font-size:0.76rem;color:var(--dim)}
+.order-item{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:9px 0;
+  border-top:1px solid var(--line);
+  font-size:0.88rem;
+}
+.order-item:first-of-type{border-top:none}
+.order-item .name{color:var(--cream)}
+.order-item .qty{color:var(--dim);font-size:0.78rem}
+.order-item .price{
+  color:var(--dim);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.order-total{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+  font-size:0.92rem;
+  font-weight:700;
+}
+.order-total .price{font-variant-numeric:tabular-nums;color:var(--gold)}
+
+/* footer */
+.foot{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  padding:4px 0 10px;
+}
+.foot p{
+  margin:0;
+  text-align:center;
+  font-size:0.78rem;
+  color:var(--dim);
+  max-width:30ch;
+}
+.refresh{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  background:transparent;
+  border:1px solid var(--gold-dim);
+  color:var(--gold);
+  font-family:inherit;
+  font-size:0.78rem;
+  font-weight:700;
+  letter-spacing:0.02em;
+  padding:9px 16px;
+  border-radius:999px;
+  cursor:pointer;
+}
+.refresh:hover{background:rgba(203,160,85,0.08)}
+.refresh:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.refresh svg{width:13px;height:13px;transition:transform .5s ease}
+.refresh.spin svg{transform:rotate(360deg)}
+.updated{font-size:0.7rem;color:var(--gold-dim);font-variant-numeric:tabular-nums}
+
+@media (prefers-reduced-motion: reduce){
+  .step.active .node{animation:none}
+  .refresh svg{transition:none}
+  .cup-illustration .steam path{animation:none; opacity:0.6}
+}
+</style>
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="sheet">
+
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--gold)">
+      <path d="M4 9h13a3 3 0 0 1 0 6h-1" stroke-linecap="round"/>
+      <path d="M4 9v6a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4v-1" stroke-linecap="round"/>
+      <path d="M7 5c0 1-1 1.2-1 2.3S7 9 7 9" stroke-linecap="round"/>
+      <path d="M11 5c0 1-1 1.2-1 2.3S11 9 11 9" stroke-linecap="round"/>
+    </svg>
+    <span>Cannale Cafés</span>
+  </div>
+  <div class="brand-rule"></div>
+
+  <div class="hero">
+    <svg class="cup-illustration" viewBox="0 0 120 130" aria-hidden="true">
+      <g class="steam" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round">
+        <path d="M45 42 C 39 33, 51 29, 46 19"/>
+        <path d="M60 42 C 54 31, 66 27, 61 15"/>
+        <path d="M75 42 C 69 33, 81 29, 76 19"/>
+      </g>
+      <path d="M30 52h60l-5 38a12 12 0 0 1-12 10H47a12 12 0 0 1-12-10z" fill="var(--surface-2)" stroke="var(--gold)" stroke-width="2"/>
+      <path d="M90 58c10-2 17 4 17 12s-8 15-18 13" fill="none" stroke="var(--gold)" stroke-width="2"/>
+      <rect x="26" y="46" width="68" height="10" rx="5" fill="var(--gold)"/>
+    </svg>
+    <div class="eyebrow">Acompanhamento do pedido</div>
+    <div class="stage" id="stageText">Seu pedido está em preparo</div>
+    <div class="eta-pill">
+      <span class="dot"></span>
+      <span>Previsão de entrega <b id="etaText">—</b></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <svg class="route-svg" viewBox="0 0 360 90" aria-hidden="true">
+      <path d="M26 66 C 110 10, 250 10, 334 66" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="1 9" stroke-linecap="round"/>
+      <path d="M26 66 C 70 38, 110 20, 150 16" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="26" cy="66" r="6" fill="var(--gold)"/>
+      <circle cx="334" cy="66" r="6" fill="var(--surface-2)" stroke="var(--dim)" stroke-width="1.4"/>
+      <g transform="translate(150,16)">
+        <circle r="11" fill="var(--sage)"/>
+        <path d="M-4 1h8a4 4 0 0 1-8 4z" fill="var(--bg)" transform="translate(-0.3,-2.4) scale(0.8)"/>
+      </g>
+    </svg>
+    <div class="route-labels">
+      <span class="from">Loja Cannale · Pinheiros</span>
+      <span class="to">Seu endereço</span>
+    </div>
+  </div>
+
+  <div class="card timeline" id="timeline">
+    <div class="step done">
+      <div class="rail"><div class="node"></div><div class="connector"></div></div>
+      <div class="body"><div class="label">Pedido confirmado</div><div class="time" id="t1">—</div></div>
+    </div>
+    <div class="step active">
+      <div class="rail"><div class="node"></div><div class="connector"></div></div>
+      <div class="body"><div class="label">Em preparo na loja</div><div class="time">Seu café está sendo preparado com carinho</div></div>
+    </div>
+    <div class="step">
+      <div class="rail"><div class="node"></div><div class="connector"></div></div>
+      <div class="body"><div class="label">Saiu para entrega</div><div class="time">Aguardando</div></div>
+    </div>
+    <div class="step">
+      <div class="rail"><div class="node"></div></div>
+      <div class="body"><div class="label">Entregue</div><div class="time">Aguardando</div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="refresh" id="refreshBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v6h-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Atualizar status
+    </button>
+    <p>Dúvidas sobre a entrega? Fale conosco no WhatsApp.</p>
+    <div class="updated" id="updatedText"></div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function formatOrdered(date){
+    var d = new Date(date);
+    d.setMinutes(d.getMinutes() - 42);
+    return d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function formatEta(date){
+    var opts = { weekday:'long', day:'numeric', month:'long' };
+    var str = date.toLocaleDateString('pt-BR', opts);
+    return capitalize(str);
+  }
+
+  function render(){
+    var now = new Date();
+    var tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+
+    document.getElementById('etaText').textContent = formatEta(tomorrow) + ', até as 14h';
+    document.getElementById('t1').textContent = 'Hoje, ' + formatOrdered(now);
+    document.getElementById('updatedText').textContent = 'Atualizado às ' + now.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  render();
+
+  var btn = document.getElementById('refreshBtn');
+  btn.addEventListener('click', function(){
+    btn.classList.add('spin');
+    render();
+    setTimeout(function(){ btn.classList.remove('spin'); }, 500);
+  });
+})();
+</script>
+</body>
+</html>
